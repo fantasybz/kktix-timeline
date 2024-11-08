@@ -95,11 +95,6 @@ pip install -r requirements.txt
 - Event count
 - Location statistics
 
-## Project Structure
-kktix-timeline/
-├── main.py # Main Python script
-├── requirements.txt # Python dependencies
-└── README.md
 
 ## Technical Details
 
