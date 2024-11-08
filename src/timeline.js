@@ -196,27 +196,50 @@ function createLabels(svg, events, y) {
 }
 
 function updateSummary(events) {
-	// Calculate total amount
+	// Calculate total amount with safety checks
 	const total = events.reduce((sum, event) => {
-		const amount = parseInt(event.details["Amount"].replace(/[^0-9]/g, ''));
-		return sum + (isNaN(amount) ? 0 : amount);
+		const amountStr = event.details["Amount"] || "0";
+		const amount = parseInt(amountStr.replace(/[^0-9-]/g, '')) || 0;
+		return sum + amount;
 	}, 0);
 
-	// Calculate total learning hours
+	// Calculate total learning hours from Event Time
 	const totalHours = events.reduce((sum, event) => {
-		// Check if Learning Hours exists and is not empty
-		const hours = event.details["Learning Hours"];
-		if (!hours) return sum;
-		
-		// Convert hours string to number and add to sum
-		const hoursNum = parseFloat(hours);
-		return sum + (isNaN(hoursNum) ? 0 : hoursNum);
+		const eventTime = event.details["Event Time"];
+		if (!eventTime) return sum;
+
+		try {
+			// Check if it's a time range (contains '~')
+			if (eventTime.includes('~')) {
+				const [startStr, endStr] = eventTime.split('~').map(t => t.trim());
+				const start = new Date(startStr.split('(')[0].trim());
+				const end = new Date(endStr.split('(')[0].trim());
+				const diffInHours = (end - start) / (1000 * 60 * 60);
+				return sum + (isNaN(diffInHours) ? 0 : diffInHours);
+			} else {
+				// If no end time, assume 0 hours
+				return sum;
+			}
+		} catch (e) {
+			console.warn('Error parsing event time:', eventTime);
+			return sum;
+		}
 	}, 0);
 
-	// Update summary stats
-	document.getElementById('totalAmount').textContent = `NT$ ${total.toLocaleString()}`;
-	document.getElementById('totalEvents').textContent = events.length;
-	document.getElementById('totalHours').textContent = `${totalHours.toFixed(1)} 小時`;
+	// Update summary stats with safety checks
+	const totalAmountElement = document.getElementById('totalAmount');
+	const totalEventsElement = document.getElementById('totalEvents');
+	const totalHoursElement = document.getElementById('totalHours');
+
+	if (totalAmountElement) {
+		totalAmountElement.textContent = `NT$ ${total.toLocaleString()}`;
+	}
+	if (totalEventsElement) {
+		totalEventsElement.textContent = events.length;
+	}
+	if (totalHoursElement) {
+		totalHoursElement.textContent = `${totalHours.toFixed(1)} 小時`;
+	}
 
 	// Create charts
 	createExpenseChart(events);
@@ -229,10 +252,16 @@ function createExpenseChart(events) {
 
 	// Process and sort events by amount
 	const sortedEvents = events
-		.map(event => ({
-			title: event.event_title,
-			amount: parseInt(event.details["Amount"].replace(/[^0-9]/g, '')),
-		}))
+		.map(event => {
+			// Extract numbers from amount string and handle invalid cases
+			const amountStr = event.details["Amount"] || "0";
+			const amount = parseInt(amountStr.replace(/[^0-9-]/g, '')) || 0;
+			return {
+				title: event.event_title,
+				amount: amount
+			};
+		})
+		.filter(event => event.amount > 0) // Only include positive amounts
 		.sort((a, b) => b.amount - a.amount)
 		.slice(0, 3);
 
@@ -277,14 +306,18 @@ function createExpenseChart(events) {
 		.append("title")
 		.text(d => `${d.title}\nNT$ ${d.amount.toLocaleString()}`);
 
-	// Add axes
+	// Add axes with horizontal labels
 	svg.append("g")
 		.attr("transform", `translate(0,${height})`)
 		.call(d3.axisBottom(x))
 		.selectAll("text")
-		.attr("transform", "rotate(-45)")
-		.style("text-anchor", "end")
-		.text(d => d.length > 15 ? d.substring(0, 12) + "..." : d);
+		.style("text-anchor", "middle")
+		.attr("dx", "0")
+		.attr("dy", "1em")
+		.attr("transform", "rotate(0)")
+		.text(function(d) {
+			return d.length > 10 ? d.substring(0, 10) + "..." : d;
+		});
 
 	svg.append("g")
 		.call(d3.axisLeft(y)
@@ -459,52 +492,41 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Add new function for location chart
 function createLocationChart(events) {
-	// Clear existing chart
-	d3.select("#locationChart").html("");
-
-	// Process and count locations
+	// Group events by location and count occurrences
 	const locationCounts = events.reduce((acc, event) => {
-		const location = event.details["Event Location"];
+		const location = event.details["Location"] || "Unknown";
 		acc[location] = (acc[location] || 0) + 1;
 		return acc;
 	}, {});
 
-	// Convert to array and sort
+	// Convert to array and sort by count
 	const sortedLocations = Object.entries(locationCounts)
-		.map(([location, count]) => ({
-			location: location || "未指定地點",
-			count: count
-		}))
+		.map(([location, count]) => ({ location, count }))
 		.sort((a, b) => b.count - a.count)
-		.slice(0, 3);
-
-	// Get container dimensions
-	const container = document.getElementById('locationChart');
-	const containerWidth = container.clientWidth;
-	const containerHeight = container.clientHeight || 300; // Fallback height
+		.slice(0, 5); // Top 5 locations
 
 	// Set up dimensions
-	const margin = { top: 20, right: 20, bottom: 60, left: 60 };
-	const width = containerWidth - margin.left - margin.right;
-	const height = containerHeight - margin.top - margin.bottom;
+	const margin = { top: 20, right: 20, bottom: 40, left: 40 };
+	const width = document.querySelector('.graph-box').clientWidth - margin.left - margin.right;
+	const height = 180 - margin.top - margin.bottom;
 
-	// Create SVG
-	const svg = d3.select("#locationChart")
-		.append("svg")
-		.attr("width", containerWidth)
-		.attr("height", containerHeight)
-		.append("g")
-		.attr("transform", `translate(${margin.left},${margin.top})`);
-
-	// Set up scales
+	// Create scales
 	const x = d3.scaleBand()
 		.range([0, width])
-		.padding(0.3)
+		.padding(0.1)
 		.domain(sortedLocations.map(d => d.location));
 
 	const y = d3.scaleLinear()
 		.range([height, 0])
 		.domain([0, d3.max(sortedLocations, d => d.count)]);
+
+	// Create SVG
+	const svg = d3.select("#locationChart")
+		.append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+		.append("g")
+		.attr("transform", `translate(${margin.left},${margin.top})`);
 
 	// Add bars
 	svg.selectAll(".location-bar")
@@ -513,24 +535,37 @@ function createLocationChart(events) {
 		.append("rect")
 		.attr("class", "location-bar")
 		.attr("x", d => x(d.location))
-		.attr("y", d => y(d.count))
 		.attr("width", x.bandwidth())
-		.attr("height", d => height - y(d.count))
-		.append("title")
-		.text(d => `${d.location}\n${d.count} 場活動`);
+		.attr("y", d => y(d.count))
+		.attr("height", d => height - y(d.count));
 
-	// Add axes
+	// Add axes with horizontal labels
 	svg.append("g")
 		.attr("transform", `translate(0,${height})`)
 		.call(d3.axisBottom(x))
 		.selectAll("text")
-		.attr("transform", "rotate(-45)")
-		.style("text-anchor", "end")
-		.text(d => d.length > 15 ? d.substring(0, 12) + "..." : d);
+		.style("text-anchor", "middle")
+		.attr("dx", "0")
+		.attr("dy", "1em")
+		.attr("transform", "rotate(0)")
+		.text(function(d) {
+			return d.length > 10 ? d.substring(0, 10) + "..." : d;
+		});
 
 	svg.append("g")
 		.call(d3.axisLeft(y)
 			.ticks(5)
-			.tickFormat(d => `NT$ ${d.toLocaleString()}`));
+			.tickFormat(d3.format("d"))); // Use integer format
+
+	// Add value labels on top of bars
+	svg.selectAll(".value-label")
+		.data(sortedLocations)
+		.enter()
+		.append("text")
+		.attr("class", "value-label")
+		.attr("x", d => x(d.location) + x.bandwidth() / 2)
+		.attr("y", d => y(d.count) - 5)
+		.attr("text-anchor", "middle")
+		.text(d => d.count);
 }
 
