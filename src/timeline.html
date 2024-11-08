@@ -19,7 +19,13 @@
 
         <div class="filter-container">
             <select id="hostFilter" onchange="filterEvents()">
-                <option value="all">All Event Hosts</option>
+                <option value="all">所有主辦單位</option>
+            </select>
+            <select id="yearFilter" onchange="filterEvents()">
+                <option value="all">所有年份</option>
+            </select>
+            <select id="locationFilter" onchange="filterEvents()">
+                <option value="all">所有地點</option>
             </select>
             <input type="text" id="searchFilter" placeholder="搜尋活動..." onkeyup="filterEvents()">
             <button class="reset-button" onclick="resetFilter()">重設</button>

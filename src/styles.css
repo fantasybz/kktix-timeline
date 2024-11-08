@@ -60,25 +60,34 @@ body {
     align-items: center;
 }
 
-#hostFilter {
-    flex: 1;
-    min-width: 200px;
+/* Common styles for all filter elements */
+#hostFilter,
+#yearFilter,
+#locationFilter,
+#searchFilter {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
     font-family: 'Noto Sans TC', sans-serif;
+    background-color: white;
 }
 
+/* Dropdown filters */
+#hostFilter,
+#yearFilter,
+#locationFilter {
+    flex: 1;
+    min-width: 150px;
+    cursor: pointer;
+}
+
+/* Search filter */
 #searchFilter {
     flex: 2;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: 'Noto Sans TC', sans-serif;
 }
 
+/* Reset button */
 .reset-button {
     background-color: #7AB80E;
     color: white;
@@ -88,10 +97,28 @@ body {
     cursor: pointer;
     font-family: 'Noto Sans TC', sans-serif;
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 .reset-button:hover {
     background-color: #689609;
+}
+
+/* Dropdown hover and focus states */
+#hostFilter:hover,
+#yearFilter:hover,
+#locationFilter:hover,
+#searchFilter:hover {
+    border-color: #7AB80E;
+}
+
+#hostFilter:focus,
+#yearFilter:focus,
+#locationFilter:focus,
+#searchFilter:focus {
+    border-color: #7AB80E;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(122, 184, 14, 0.2);
 }
 
 /* Timeline and existing styles... */

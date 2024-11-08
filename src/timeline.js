@@ -10,10 +10,13 @@ function initializeFilters(events) {
 	const hosts = [...new Set(events.map(event => event.details["Event Host"]))].sort();
 
 	// Get unique years from Start Time
-	const years = [...new Set(events.map(event => {
+	const years = Array.from(new Set(events.map(event => {
 		const date = new Date(event.details["Start Time"].replace(/\//g, '-'));
 		return date.getFullYear();
-	})).sort((a, b) => b - a)];  // Sort years descending
+	}))).sort((a, b) => b - a);  // Sort years descending
+
+	// Get unique locations
+	const locations = [...new Set(events.map(event => event.details["Event Location"]))].sort();
 
 	// Populate host filter dropdown
 	const hostSelect = document.getElementById('hostFilter');
@@ -22,7 +25,8 @@ function initializeFilters(events) {
 	hosts.forEach(host => {
 		const option = document.createElement('option');
 		option.value = host;
-		option.text = host;
+		option.text = host.length > 20 ? host.substring(0, 17) + '...' : host;
+		option.title = host;  // Show full text on hover
 		hostSelect.appendChild(option);
 	});
 
@@ -37,23 +41,37 @@ function initializeFilters(events) {
 		yearSelect.appendChild(option);
 	});
 
+	// Populate location filter dropdown
+	const locationSelect = document.getElementById('locationFilter');
+	locationSelect.innerHTML = '<option value="all">所有地點</option>';
+
+	locations.forEach(location => {
+		const option = document.createElement('option');
+		option.value = location;
+		option.text = location.length > 20 ? location.substring(0, 17) + '...' : location;
+		option.title = location;  // Show full text on hover
+		locationSelect.appendChild(option);
+	});
+
 	filteredData = events;
 }
 
 function filterEvents() {
 	const selectedHost = document.getElementById('hostFilter').value;
 	const selectedYear = document.getElementById('yearFilter').value;
+	const selectedLocation = document.getElementById('locationFilter').value;
 	const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
 
 	filteredData = timelineData.filter(event => {
 		const hostMatch = selectedHost === 'all' || event.details["Event Host"] === selectedHost;
 		const titleMatch = event.event_title.toLowerCase().includes(searchTerm);
+		const locationMatch = selectedLocation === 'all' || event.details["Event Location"] === selectedLocation;
 		
 		// Year matching
 		const eventDate = new Date(event.details["Start Time"].replace(/\//g, '-'));
 		const yearMatch = selectedYear === 'all' || eventDate.getFullYear().toString() === selectedYear;
 		
-		return hostMatch && titleMatch && yearMatch;
+		return hostMatch && titleMatch && yearMatch && locationMatch;
 	});
 
 	// Sort filtered data before creating timeline
