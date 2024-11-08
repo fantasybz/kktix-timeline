@@ -284,29 +284,39 @@ function createTimeline(events) {
 				.attr("class", "tooltip")
 				.attr("transform", `translate(${x(d.startDate) + 15},${y(d.event_title) + y.bandwidth() / 2})`);
 
-			tooltip.append("rect")
-				.attr("x", 0)
-				.attr("y", -35)  // Adjusted for two lines
-				.attr("width", 200)
-				.attr("height", 70)  // Increased height
-				.attr("rx", 4)
-				.attr("fill", "white")
-				.attr("stroke", "#ccc");
-
-			tooltip.append("text")
+			// Create the text elements first
+			const startText = tooltip.append("text")
 				.attr("x", 10)
 				.attr("y", -15)
 				.text(`開始: ${d.details["Start Time"]}`);
 
-			tooltip.append("text")
+			const endText = tooltip.append("text")
 				.attr("x", 10)
 				.attr("y", 5)
 				.text(`結束: ${d.details["End Time"] || "N/A"}`);
 
-			tooltip.append("text")
+			const locationText = tooltip.append("text")
 				.attr("x", 10)
 				.attr("y", 25)
 				.text(d.details["Event Location"].substring(0, 25) + "...");
+
+			// Calculate maximum width needed
+			const textWidths = [
+				startText.node().getBBox().width,
+				endText.node().getBBox().width,
+				locationText.node().getBBox().width
+			];
+			const maxWidth = Math.max(...textWidths);
+
+			// Add the background rectangle with calculated width
+			tooltip.insert("rect", ":first-child")
+				.attr("x", 0)
+				.attr("y", -35)
+				.attr("width", maxWidth + 20) // Add padding
+				.attr("height", 70)
+				.attr("rx", 4)
+				.attr("fill", "white")
+				.attr("stroke", "#ccc");
 		})
 		.on("mouseout", function (event, d) {
 			// Return to original color
