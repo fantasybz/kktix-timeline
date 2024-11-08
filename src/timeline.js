@@ -28,6 +28,13 @@ function filterEvents() {
         return hostMatch && titleMatch;
     });
     
+    // Sort filtered data before creating timeline
+    filteredData.sort((a, b) => {
+        const aDate = new Date(a.details["Start Time"].replace(/\//g, '-'));
+        const bDate = new Date(b.details["Start Time"].replace(/\//g, '-'));
+        return bDate - aDate;  // Descending order
+    });
+    
     // Clear and redraw timeline
     createTimeline(filteredData);
 }
@@ -146,19 +153,28 @@ function createTimeline(events) {
     // Clear any existing timeline first
     d3.select("#timeline").html("");
     
-    const margin = {top: 30, right: 150, bottom: 50, left: 300};  // Increased right margin for tooltips
+    const margin = {top: 30, right: 150, bottom: 50, left: 300};
     const width = 1200 - margin.left - margin.right;
-    const height = Math.max(events.length * 30, 100);  // Increased height per event
+    const height = Math.max(events.length * 30, 100);
 
-    // Parse dates
+    // Parse dates and sort in descending order by start time
     events.forEach(d => {
         d.startDate = new Date(d.details["Start Time"].replace(/\//g, '-'));
+        // Also parse the time portion for more precise sorting
+        d.startDateTime = new Date(d.details["Start Time"].replace(/\//g, '-'));
     });
 
-    // Sort events by date
-    events.sort((a, b) => a.startDate - b.startDate);
+    // Sort events by start time in descending order
+    events.sort((a, b) => {
+        // First compare by date
+        const dateCompare = b.startDate - a.startDate;
+        if (dateCompare !== 0) return dateCompare;
+        
+        // If same date, compare by time
+        return b.startDateTime - a.startDateTime;
+    });
 
-    // Create SVG
+    // Create SVG and scales
     const svg = d3.select("#timeline")
         .append("svg")
         .attr("width", width + margin.left + margin.right)
@@ -168,13 +184,13 @@ function createTimeline(events) {
 
     // Set up scales
     const x = d3.scaleTime()
-        .domain(d3.extent(events, d => d.startDate))
+        .domain(d3.extent(events, d => d.startDate).reverse())  // Reverse domain for descending order
         .range([0, width]);
 
     const y = d3.scaleBand()
         .domain(events.map(d => d.event_title))
         .range([0, height])
-        .padding(0.3);  // Increased padding between bars
+        .padding(0.3);
 
     // Add alternating background stripes
     svg.selectAll("rect.background")
