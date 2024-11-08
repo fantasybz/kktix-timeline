@@ -1,0 +1,326 @@
+/* Base styles */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #f5f5f5;
+}
+
+/* Header styles */
+.kktix-header {
+    background-color: #7AB80E;
+    color: white;
+    padding: 15px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.user-info {
+    padding: 8px 15px;
+    border-radius: 4px;
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* Container styles */
+.container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+/* Filter container */
+.filter-container {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+select, input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+input {
+    flex-grow: 1;
+}
+
+.reset-button {
+    background-color: #7AB80E;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Noto Sans TC', sans-serif;
+    transition: background-color 0.2s;
+}
+
+.reset-button:hover {
+    background-color: #689609;
+}
+
+/* Timeline and existing styles... */
+.event-details {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* ... rest of your existing styles ... */
+
+/* Add these styles to your existing CSS */
+.tick text {
+    font-size: 12px;
+    font-family: 'Noto Sans TC', sans-serif;
+}
+
+.tick line {
+    stroke: #ccc;
+}
+
+.domain {
+    stroke: #ccc;
+}
+
+/* Add or update these styles */
+#timeline {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    margin-top: 20px;
+}
+
+#timeline svg {
+    min-width: 900px;
+}
+
+
+.domain {
+    stroke: #ccc;
+}
+
+.tooltip {
+    font-size: 12px;
+    fill: #666;
+}
+
+/* Event details modal styles */
+.event-details {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    display: none;
+}
+
+.event-header {
+    margin-bottom: 20px;
+}
+
+.event-header h2 {
+    margin: 0 0 15px 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.event-thumbnail {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.event-thumbnail img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.event-info table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.event-info th, 
+.event-info td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.event-info th {
+    width: 120px;
+    color: #666;
+    font-weight: 500;
+    background-color: #f8f8f8;
+}
+
+.event-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.action-button {
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #fff;
+    background-color: #7AB80E;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
+.action-button:hover {
+    background-color: #689609;
+}
+
+.action-button.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.close-button {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    background: #f0f0f0;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #666;
+    transition: all 0.2s;
+}
+
+.close-button:hover {
+    background: #e0e0e0;
+    color: #333;
+}
+
+/* Timeline specific styles */
+#timeline {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.timeline-bar {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.timeline-label {
+    font-size: 12px;
+    fill: #333;
+    cursor: pointer;
+    dominant-baseline: middle;
+    font-family: 'Noto Sans TC', sans-serif;
+    pointer-events: all;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.timeline-label:hover {
+    fill: #0066cc;
+    text-decoration: underline;
+}
+
+.timeline-bar {
+    fill: #7AB80E;
+    transition: fill 0.2s, width 0.2s;
+}
+
+.timeline-bar:hover {
+    fill: #ff4444;
+    cursor: pointer;
+}
+
+.x-axis path,
+.y-axis path {
+    stroke: #ccc;
+}
+
+.x-axis .tick line,
+.y-axis .tick line {
+    stroke: #ddd;
+}
+
+.x-axis text,
+.y-axis text {
+    font-size: 12px;
+    fill: #666;
+}
+
+.tooltip text {
+    font-size: 12px;
+    fill: #333;
+}
+
+/* Axis Styling */
+.x-axis path {
+    stroke: #ccc;
+    stroke-width: 1px;
+}
+
+.x-axis line {
+    stroke: #ccc;
+    stroke-width: 1px;
+}
+
+.x-axis text {
+    font-size: 12px;
+    fill: #666;
+    font-family: 'Noto Sans TC', sans-serif;
+    text-anchor: middle;
+    transform: translateY(10px);
+}
+
+/* Remove the alternating positions */
+.x-axis .tick line {
+    stroke: #ccc;
+    stroke-width: 1px;
+}

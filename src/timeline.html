@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KKTIX Order Timeline</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="kktix-header">
+        <div class="header-content">
+            <div class="logo">KKTIX Order Timeline</div>
+            <div class="header-right">
+                <span class="user-info">fantasybz</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <div class="filter-container">
+            <select id="hostFilter" onchange="filterEvents()">
+                <option value="all">All Event Hosts</option>
+            </select>
+            <input type="text" id="searchFilter" placeholder="搜尋活動..." onkeyup="filterEvents()">
+            <button class="reset-button" onclick="resetFilter()">重設</button>
+        </div>
+
+        <div id="timeline"></div>
+
+        <div id="event-details" class="event-details">
+            <span class="close-button" onclick="hideEventDetails()">×</span>
+            <div id="event-details-content"></div>
+        </div>
+    </main>
+
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+        // [TIMELINE_DATA_INJECTION]
+    </script>
+    <script src="timeline.js"></script>
+</body>
+</html> 

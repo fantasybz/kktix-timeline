@@ -1,0 +1,7 @@
+# Core dependencies
+selenium==4.18.1          # For web scraping
+webdriver-manager==4.0.1  # For managing Chrome WebDriver
+python-dotenv==1.0.1      # For loading environment variables
+
+# Optional dependencies
+# None required - removed screenshot functionality
