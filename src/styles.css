@@ -363,3 +363,169 @@ body {
     stroke: #ccc;
     stroke-width: 1px;
 }
+
+/* Add these styles */
+.summary-container {
+    display: flex;
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-stats {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.stat-box {
+    flex: 1;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.stat-box h3 {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+.stat-box div {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.top-expenses {
+    display: none;
+}
+
+.top-expenses h3 {
+    margin: 0 0 15px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+#expenseChart .expense-bar {
+    fill: #4ECDC4;
+    transition: fill 0.3s;
+}
+
+#expenseChart .expense-bar:hover {
+    fill: #45B7D1;
+}
+
+#expenseChart text {
+    font-size: 12px;
+}
+
+/* Add new graph summary styles */
+.graph-summary {
+    margin: 20px 0;
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px; /* Space for potential scrollbar */
+}
+
+.graph-box {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+.graph-box h3 {
+    margin: 0 0 15px 0;
+    font-size: 1rem;
+    color: #666;
+}
+
+/* Update expense chart styles */
+#expenseChart {
+    width: 100%;
+    height: 300px; /* Fixed height for the chart */
+}
+
+#expenseChart .expense-bar {
+    fill: #4ECDC4;
+    transition: fill 0.3s;
+}
+
+#expenseChart .expense-bar:hover {
+    fill: #45B7D1;
+}
+
+#expenseChart text {
+    font-size: 12px;
+}
+
+/* Add styles for location chart */
+#locationChart {
+    width: 100%;
+    height: 300px;
+}
+
+#locationChart .location-bar {
+    fill: #FF9F1C;
+    transition: fill 0.3s;
+}
+
+#locationChart .location-bar:hover {
+    fill: #FF8C00;
+}
+
+#locationChart text {
+    font-size: 12px;
+}
+
+.value-label {
+    font-size: 12px;
+    font-weight: bold;
+    fill: #666;
+}
+
+/* Update graph box styles to ensure equal sizing */
+.graph-box {
+    flex: 1;
+    min-width: 0; /* Prevents flex items from overflowing */
+}
+
+/* Make the graph summary container scrollable on small screens */
+.graph-summary {
+    margin: 20px 0;
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px; /* Space for potential scrollbar */
+}
+
+@media (max-width: 1200px) {
+    .graph-box {
+        min-width: 400px; /* Minimum width for readability */
+    }
+}
+
+/* Add responsive design for smaller screens */
+@media (max-width: 768px) {
+    .summary-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .stat-box {
+        padding: 10px;
+    }
+    
+    .stat-box div {
+        font-size: 1.2rem;
+    }
+}

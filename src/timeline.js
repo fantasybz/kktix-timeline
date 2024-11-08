@@ -195,7 +195,107 @@ function createLabels(svg, events, y) {
 	return labels;
 }
 
+function updateSummary(events) {
+	// Calculate total amount
+	const total = events.reduce((sum, event) => {
+		const amount = parseInt(event.details["Amount"].replace(/[^0-9]/g, ''));
+		return sum + (isNaN(amount) ? 0 : amount);
+	}, 0);
+
+	// Calculate total learning hours
+	const totalHours = events.reduce((sum, event) => {
+		// Check if Learning Hours exists and is not empty
+		const hours = event.details["Learning Hours"];
+		if (!hours) return sum;
+		
+		// Convert hours string to number and add to sum
+		const hoursNum = parseFloat(hours);
+		return sum + (isNaN(hoursNum) ? 0 : hoursNum);
+	}, 0);
+
+	// Update summary stats
+	document.getElementById('totalAmount').textContent = `NT$ ${total.toLocaleString()}`;
+	document.getElementById('totalEvents').textContent = events.length;
+	document.getElementById('totalHours').textContent = `${totalHours.toFixed(1)} 小時`;
+
+	// Create charts
+	createExpenseChart(events);
+	createLocationChart(events);
+}
+
+function createExpenseChart(events) {
+	// Clear existing chart
+	d3.select("#expenseChart").html("");
+
+	// Process and sort events by amount
+	const sortedEvents = events
+		.map(event => ({
+			title: event.event_title,
+			amount: parseInt(event.details["Amount"].replace(/[^0-9]/g, '')),
+		}))
+		.sort((a, b) => b.amount - a.amount)
+		.slice(0, 3);
+
+	// Get container dimensions
+	const container = document.getElementById('expenseChart');
+	const containerWidth = container.clientWidth;
+	const containerHeight = container.clientHeight;
+
+	// Set up dimensions
+	const margin = { top: 20, right: 20, bottom: 60, left: 80 };
+	const width = containerWidth - margin.left - margin.right;
+	const height = containerHeight - margin.top - margin.bottom;
+
+	// Create SVG
+	const svg = d3.select("#expenseChart")
+		.append("svg")
+		.attr("width", containerWidth)
+		.attr("height", containerHeight)
+		.append("g")
+		.attr("transform", `translate(${margin.left},${margin.top})`);
+
+	// Set up scales
+	const x = d3.scaleBand()
+		.range([0, width])
+		.padding(0.3)
+		.domain(sortedEvents.map(d => d.title));
+
+	const y = d3.scaleLinear()
+		.range([height, 0])
+		.domain([0, d3.max(sortedEvents, d => d.amount)]);
+
+	// Add bars
+	svg.selectAll(".expense-bar")
+		.data(sortedEvents)
+		.enter()
+		.append("rect")
+		.attr("class", "expense-bar")
+		.attr("x", d => x(d.title))
+		.attr("y", d => y(d.amount))
+		.attr("width", x.bandwidth())
+		.attr("height", d => height - y(d.amount))
+		.append("title")
+		.text(d => `${d.title}\nNT$ ${d.amount.toLocaleString()}`);
+
+	// Add axes
+	svg.append("g")
+		.attr("transform", `translate(0,${height})`)
+		.call(d3.axisBottom(x))
+		.selectAll("text")
+		.attr("transform", "rotate(-45)")
+		.style("text-anchor", "end")
+		.text(d => d.length > 15 ? d.substring(0, 12) + "..." : d);
+
+	svg.append("g")
+		.call(d3.axisLeft(y)
+			.ticks(5)
+			.tickFormat(d => `NT$ ${d.toLocaleString()}`));
+}
+
 function createTimeline(events) {
+	// Add this at the beginning of the function
+	updateSummary(events);
+	
 	// Clear any existing timeline first
 	d3.select("#timeline").html("");
 
@@ -356,4 +456,81 @@ document.addEventListener('DOMContentLoaded', function () {
 		initializeFilters(timelineData);
 	}
 });
+
+// Add new function for location chart
+function createLocationChart(events) {
+	// Clear existing chart
+	d3.select("#locationChart").html("");
+
+	// Process and count locations
+	const locationCounts = events.reduce((acc, event) => {
+		const location = event.details["Event Location"];
+		acc[location] = (acc[location] || 0) + 1;
+		return acc;
+	}, {});
+
+	// Convert to array and sort
+	const sortedLocations = Object.entries(locationCounts)
+		.map(([location, count]) => ({
+			location: location || "未指定地點",
+			count: count
+		}))
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 3);
+
+	// Get container dimensions
+	const container = document.getElementById('locationChart');
+	const containerWidth = container.clientWidth;
+	const containerHeight = container.clientHeight || 300; // Fallback height
+
+	// Set up dimensions
+	const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+	const width = containerWidth - margin.left - margin.right;
+	const height = containerHeight - margin.top - margin.bottom;
+
+	// Create SVG
+	const svg = d3.select("#locationChart")
+		.append("svg")
+		.attr("width", containerWidth)
+		.attr("height", containerHeight)
+		.append("g")
+		.attr("transform", `translate(${margin.left},${margin.top})`);
+
+	// Set up scales
+	const x = d3.scaleBand()
+		.range([0, width])
+		.padding(0.3)
+		.domain(sortedLocations.map(d => d.location));
+
+	const y = d3.scaleLinear()
+		.range([height, 0])
+		.domain([0, d3.max(sortedLocations, d => d.count)]);
+
+	// Add bars
+	svg.selectAll(".location-bar")
+		.data(sortedLocations)
+		.enter()
+		.append("rect")
+		.attr("class", "location-bar")
+		.attr("x", d => x(d.location))
+		.attr("y", d => y(d.count))
+		.attr("width", x.bandwidth())
+		.attr("height", d => height - y(d.count))
+		.append("title")
+		.text(d => `${d.location}\n${d.count} 場活動`);
+
+	// Add axes
+	svg.append("g")
+		.attr("transform", `translate(0,${height})`)
+		.call(d3.axisBottom(x))
+		.selectAll("text")
+		.attr("transform", "rotate(-45)")
+		.style("text-anchor", "end")
+		.text(d => d.length > 15 ? d.substring(0, 12) + "..." : d);
+
+	svg.append("g")
+		.call(d3.axisLeft(y)
+			.ticks(5)
+			.tickFormat(d => `NT$ ${d.toLocaleString()}`));
+}
 
