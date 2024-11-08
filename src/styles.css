@@ -41,13 +41,15 @@ body {
 
 /* Container styles */
 .container {
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 0 20px;
+    width: 95%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 /* Filter container */
 .filter-container {
+    width: 100%;
     background-color: white;
     padding: 15px;
     border-radius: 8px;
@@ -55,9 +57,12 @@ body {
     margin-bottom: 20px;
     display: flex;
     gap: 15px;
+    align-items: center;
 }
 
-select, input {
+#hostFilter {
+    flex: 1;
+    min-width: 200px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -65,8 +70,13 @@ select, input {
     font-family: 'Noto Sans TC', sans-serif;
 }
 
-input {
-    flex-grow: 1;
+#searchFilter {
+    flex: 2;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: 'Noto Sans TC', sans-serif;
 }
 
 .reset-button {
@@ -110,15 +120,18 @@ input {
 /* Add or update these styles */
 #timeline {
     width: 100%;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     overflow-x: auto;
-    overflow-y: visible;
-    margin-top: 20px;
 }
 
 #timeline svg {
-    min-width: 900px;
+    width: 100%;
+    height: auto;
+    min-width: 900px;  /* Minimum width to prevent too much compression */
 }
-
 
 .domain {
     stroke: #ccc;
@@ -270,7 +283,6 @@ input {
 }
 
 .timeline-bar {
-    fill: #7AB80E;
     transition: fill 0.2s, width 0.2s;
 }
 

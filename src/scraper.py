@@ -165,10 +165,16 @@ class KKTIXScraper:
                         order_number = order.find_element(By.CLASS_NAME, "subrow").text.strip('#')
                         thumbnail = order.find_element(By.CLASS_NAME, "thumb").get_attribute("src")
                         
-                        # Extract event details
-                        event_element = order.find_element(By.CSS_SELECTOR, ".event-title h4.subrow a")
-                        event_title = event_element.text
-                        event_url = event_element.get_attribute("href")
+                        # Extract event details - handle both linked and non-linked titles
+                        event_element = order.find_element(By.CSS_SELECTOR, ".event-title h4.subrow")
+                        # Try to find anchor tag first, if not found use h4 text directly
+                        try:
+                            event_link = event_element.find_element(By.TAG_NAME, "a")
+                            event_title = event_link.text
+                            event_url = event_link.get_attribute("href")
+                        except:
+                            event_title = event_element.text
+                            event_url = None
                         
                         # Extract all details from dl.item
                         item_dl = order.find_element(By.CLASS_NAME, "item")
@@ -212,7 +218,55 @@ class KKTIXScraper:
                                 "disabled": button.get_attribute("disabled") is not None
                             })
                         
-                        # Compile all information
+                        # Extract detailed time information from Check/Edit Details page
+                        check_details_button = next(
+                            (btn for btn in action_buttons if btn["text"] == "Check/Edit Details"),
+                            None
+                        )
+                        
+                        if check_details_button and not check_details_button["disabled"]:
+                            try:
+                                # Open new tab
+                                self.driver.execute_script(f"window.open('{check_details_button['url']}', '_blank');")
+                                
+                                # Switch to new tab
+                                self.driver.switch_to.window(self.driver.window_handles[-1])
+                                
+                                # Wait for time information to load using the correct XPath
+                                time_element = self.wait_for_element(
+                                    By.XPATH,
+                                    '//*[@id="registrations_controller"]/div[1]/div[2]/div/div[1]/div/table/tbody/tr[1]/td',
+                                    timeout=10
+                                )
+                                
+                                if time_element:
+                                    # Extract and format time information
+                                    time_text = time_element.text.strip()
+                                    
+                                    # Remove "Add to Calendar" text
+                                    time_text = time_text.replace("Add to Calendar", "").strip()
+                                    
+                                    # Get only the start time (everything before ~)
+                                    start_time = time_text.split("~")[0].strip()
+                                    
+                                    # Store both original and start time
+                                    details["Event Time"] = time_text
+                                    details["Start Time"] = start_time
+                                    
+                                    self.logger.debug(f"Parsed times - Start: {start_time}")
+                                
+                                # Close tab and switch back
+                                self.driver.close()
+                                self.driver.switch_to.window(self.driver.window_handles[0])
+                                
+                            except Exception as e:
+                                self.logger.warning(f"Error extracting detailed time for order {order_number}: {str(e)}")
+                                # Ensure we switch back to main tab even if there's an error
+                                if len(self.driver.window_handles) > 1:
+                                    self.driver.close()
+                                    self.driver.switch_to.window(self.driver.window_handles[0])
+                        
+                        # Compile order information
                         order_info = {
                             "order_number": order_number,
                             "thumbnail_url": thumbnail,

@@ -10,7 +10,7 @@
         <div class="header-content">
             <div class="logo">KKTIX Order Timeline</div>
             <div class="header-right">
-                <span class="user-info">fantasybz</span>
+                <span class="user-info"></span>
             </div>
         </div>
     </header>
@@ -36,6 +36,30 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
         // [TIMELINE_DATA_INJECTION]
+
+        // Generate colors for different hosts
+        const hostColors = {};
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', 
+            '#FFEEAD', '#D4A5A5', '#9B59B6', '#3498DB',
+            '#FF9F1C', '#2ECC71', '#E74C3C', '#1ABC9C',
+            '#F1C40F', '#8E44AD', '#E67E22', '#16A085'
+        ];
+
+        let colorIndex = 0;
+        timelineData.forEach(event => {
+            const host = event.details["Event Host"];
+            if (host && !hostColors[host]) {
+                hostColors[host] = colors[colorIndex % colors.length];
+                colorIndex++;
+            }
+        });
+
+        // Add color getter function
+        function getEventColor(event) {
+            const host = event.details["Event Host"];
+            return hostColors[host] || '#ccc';
+        }
     </script>
     <script src="timeline.js"></script>
 </body>

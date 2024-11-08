@@ -1,4 +1,9 @@
 let filteredData = [];
+const colorScale = d3.scaleOrdinal(d3.schemeSet3);  // Using D3's color scheme
+
+function getEventColor(eventHost) {
+    return colorScale(eventHost);
+}
 
 function initializeFilters(events) {
     // Get unique hosts
@@ -153,26 +158,30 @@ function createTimeline(events) {
     // Clear any existing timeline first
     d3.select("#timeline").html("");
     
+    // Calculate width based on window size
+    const containerWidth = Math.min(window.innerWidth * 0.95, 1600); // 95% of window width, max 1600px
     const margin = {top: 30, right: 150, bottom: 50, left: 300};
-    const width = 1200 - margin.left - margin.right;
+    const width = containerWidth - margin.left - margin.right;
     const height = Math.max(events.length * 30, 100);
 
-    // Parse dates and sort in descending order by start time
+    // Update SVG container width
+    const svg = d3.select("#timeline")
+        .append("svg")
+        .attr("width", containerWidth)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Parse both start and end dates
     events.forEach(d => {
         d.startDate = new Date(d.details["Start Time"].replace(/\//g, '-'));
-        // Also parse the time portion for more precise sorting
-        d.startDateTime = new Date(d.details["Start Time"].replace(/\//g, '-'));
+        d.endDate = d.details["End Time"] ? 
+            new Date(d.details["End Time"].replace(/\//g, '-')) : 
+            d.startDate;  // Use start date if no end date
     });
 
     // Sort events by start time in descending order
-    events.sort((a, b) => {
-        // First compare by date
-        const dateCompare = b.startDate - a.startDate;
-        if (dateCompare !== 0) return dateCompare;
-        
-        // If same date, compare by time
-        return b.startDateTime - a.startDateTime;
-    });
+    events.sort((a, b) => b.startDate - a.startDate);
 
     // Create SVG and scales
     const svg = d3.select("#timeline")
@@ -182,9 +191,12 @@ function createTimeline(events) {
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    // Set up scales
+    // Set up scales - extend domain to include end dates
     const x = d3.scaleTime()
-        .domain(d3.extent(events, d => d.startDate).reverse())  // Reverse domain for descending order
+        .domain([
+            d3.min(events, d => d.startDate),
+            d3.max(events, d => d.endDate)
+        ])
         .range([0, width]);
 
     const y = d3.scaleBand()
@@ -213,7 +225,7 @@ function createTimeline(events) {
         .attr("transform", `translate(0,${height})`)
         .call(xAxis);
 
-    // Add event bars
+    // Update event bars to show duration
     svg.selectAll(".timeline-bar")
         .data(events)
         .enter()
@@ -221,45 +233,52 @@ function createTimeline(events) {
         .attr("class", "timeline-bar")
         .attr("x", d => x(d.startDate))
         .attr("y", d => y(d.event_title))
-        .attr("width", 8)  // Slightly thinner bars
+        .attr("width", d => Math.max(8, x(d.endDate) - x(d.startDate)))
         .attr("height", y.bandwidth())
-        .attr("rx", 4)  // Rounded corners
+        .attr("rx", 4)
         .attr("ry", 4)
-        .attr("fill", "#7AB80E")  // KKTIX green
+        .attr("fill", d => getEventColor(d.details["Event Host"]))  // Color by host
+        .style("transition", "fill 0.3s ease")
         .on("mouseover", function(event, d) {
-            // Highlight bar
+            // Darken the same color on hover
             d3.select(this)
-                .attr("fill", "#ff4444")
-                .attr("width", 12);  // Make bar wider on hover
+                .attr("fill", d3.color(getEventColor(d.details["Event Host"])).darker(0.5))
+                .style("cursor", "pointer");
             
-            // Add tooltip
+            // Add tooltip with both start and end times
             const tooltip = svg.append("g")
                 .attr("class", "tooltip")
                 .attr("transform", `translate(${x(d.startDate) + 15},${y(d.event_title) + y.bandwidth()/2})`);
             
             tooltip.append("rect")
                 .attr("x", 0)
-                .attr("y", -25)
+                .attr("y", -35)  // Adjusted for two lines
                 .attr("width", 200)
-                .attr("height", 50)
+                .attr("height", 70)  // Increased height
                 .attr("rx", 4)
                 .attr("fill", "white")
                 .attr("stroke", "#ccc");
                 
             tooltip.append("text")
                 .attr("x", 10)
-                .attr("y", -5)
-                .text(d.details["Start Time"]);
+                .attr("y", -15)
+                .text(`開始: ${d.details["Start Time"]}`);
                 
             tooltip.append("text")
                 .attr("x", 10)
-                .attr("y", 15)
+                .attr("y", 5)
+                .text(`結束: ${d.details["End Time"] || "N/A"}`);
+                
+            tooltip.append("text")
+                .attr("x", 10)
+                .attr("y", 25)
                 .text(d.details["Event Location"].substring(0, 25) + "...");
         })
-        .on("mouseout", function() {
+        .on("mouseout", function(event, d) {
+            // Return to original color
             d3.select(this)
-                .attr("fill", "#7AB80E")
-                .attr("width", 8);
+                .attr("fill", getEventColor(d.details["Event Host"]))
+                .style("cursor", "default");
             svg.selectAll(".tooltip").remove();
         })
         .on("click", (event, d) => showEventDetails(d));
@@ -278,6 +297,13 @@ function createTimeline(events) {
             .style("fill", "#333");
     });
 }
+
+// Add window resize handler
+window.addEventListener('resize', () => {
+    if (filteredData.length > 0) {
+        createTimeline(filteredData);
+    }
+});
 
 // Initialize the visualization when the page loads
 document.addEventListener('DOMContentLoaded', function() {
