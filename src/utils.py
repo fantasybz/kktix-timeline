@@ -12,7 +12,10 @@ def setup_logger():
     # Create logger with timestamp in filename
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     logger = logging.getLogger('kktix_scraper')
-    logger.setLevel(logging.INFO)
+    
+    # Set log level based on DEBUG environment variable
+    debug_mode = os.getenv('KKTIX_DEBUG', 'false').lower() == 'true'
+    logger.setLevel(logging.DEBUG if debug_mode else logging.INFO)
     
     # Prevent duplicate handlers
     if logger.handlers:

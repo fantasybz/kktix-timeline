@@ -17,11 +17,28 @@ class KKTIXScraper:
         
         # Setup Chrome options
         chrome_options = Options()
-        chrome_options.add_argument('--headless=new')  # Use new headless mode
+        
+        # Check headless mode from environment variable with debug logging
+        headless_env = os.getenv('KKTIX_HEADLESS', 'true')  # Default to 'true' if not set
+        self.logger.debug(f"KKTIX_HEADLESS environment variable: {headless_env}")
+        
+        # Handle None case and convert to boolean
+        headless = str(headless_env).lower() == 'true' if headless_env is not None else True
+        self.logger.debug(f"Headless mode enabled: {headless}")
+        
+        if headless:
+            chrome_options.add_argument('--headless=new')
+            chrome_options.add_argument('--window-size=1920,1080')
+            self.logger.info("Running in headless mode")
+        else:
+            self.logger.info("Running in visible mode")
+        
+        # Add debug logging for chrome options
+        self.logger.debug(f"Chrome options arguments: {chrome_options.arguments}")
+        
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
-        chrome_options.add_argument('--window-size=1920,1080')  # Set window size for headless mode
         
         self.driver = webdriver.Chrome(options=chrome_options)
         self.base_url = "https://kktix.com/account/orders"
