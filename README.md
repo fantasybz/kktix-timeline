@@ -56,7 +56,7 @@ pip install -r requirements.txt
 
 1. **Execute the Python Script**
    ```bash
-   python3 main.py
+   python3 src/main.py
    ```
    The script will process your KKTIX data and generate output files
 
