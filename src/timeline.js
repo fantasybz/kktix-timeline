@@ -458,30 +458,32 @@ function createTimeline(events) {
                                 .attr("y", -15)
                                 .text(`開始: ${d.details["Start Time"]}`);
 
-                        const endText = tooltip.append("text")
+                        // Parse Event Time string
+                        const eventTime = d.details["Event Time"] || "";
+                        const [startTime, endTime] = eventTime.split(" ~ ");
+
+                        // Only add end time if it exists
+                        if (endTime) {
+                            tooltip.append("text")
                                 .attr("x", 10)
                                 .attr("y", 5)
-                                .text(`結束: ${d.details["End Time"] || "N/A"}`);
+                                .text(`結束: ${endTime}`);
+
+                            // Adjust location text position when end time exists
+                            locationText.attr("y", 25);
+                        }
 
                         const locationText = tooltip.append("text")
                                 .attr("x", 10)
-                                .attr("y", 25)
+                                .attr("y", endTime ? 25 : 5)
                                 .text(d.details["Event Location"].substring(0, 25) + "...");
 
-                        // Calculate maximum width needed
-                        const textWidths = [
-                                startText.node().getBBox().width,
-                                endText.node().getBBox().width,
-                                locationText.node().getBBox().width
-                        ];
-                        const maxWidth = Math.max(...textWidths);
-
-                        // Add the background rectangle with calculated width
+                        // Adjust tooltip background height based on whether end time exists
                         tooltip.insert("rect", ":first-child")
                                 .attr("x", 0)
                                 .attr("y", -35)
-                                .attr("width", maxWidth + 20) // Add padding
-                                .attr("height", 70)
+                                .attr("width", maxWidth + 20)
+                                .attr("height", endTime ? 70 : 50)  // Taller if end time exists
                                 .attr("rx", 4)
                                 .attr("fill", "white")
                                 .attr("stroke", "#ccc");
