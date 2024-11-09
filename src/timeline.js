@@ -335,7 +335,7 @@ function createTimeline(events) {
 
 	// Calculate width based on window size
 	const containerWidth = Math.min(window.innerWidth * 0.95, 1600);
-	const margin = { top: 10, right: 50, bottom: 100, left: 300 };
+	const margin = { top: 50, right: 50, bottom: 100, left: 300 };
 	const width = containerWidth - margin.left - margin.right;
 	
 	// Calculate height based on number of events with a minimum row height
@@ -419,14 +419,22 @@ function createTimeline(events) {
 				.attr("stroke", "#e0e0e0");
 		});
 
-	// Add x-axis with alternating ticks
-	const xAxis = d3.axisBottom(x)
+	const xAxisBottom = d3.axisBottom(x)
 		.tickFormat(d3.timeFormat("%Y/%m/%d"));
 
-	const xAxisGroup = svg.append("g")
-		.attr("class", "x-axis")
+	const xAxisTop = d3.axisTop(x)
+		.tickFormat(d3.timeFormat("%Y/%m/%d"));
+
+	// Add bottom axis
+	svg.append("g")
+		.attr("class", "x-axis bottom")
 		.attr("transform", `translate(0,${height})`)
-		.call(xAxis);
+		.call(xAxisBottom);
+
+	// Add top axis
+	svg.append("g")
+		.attr("class", "x-axis top")
+		.call(xAxisTop);
 
 	// Update event bars to show duration
 	svg.selectAll(".timeline-bar")
