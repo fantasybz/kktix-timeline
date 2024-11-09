@@ -101,5 +101,4 @@ pip install -r requirements.txt
 ### Technologies Used
 - Python 3.8+
 - Selenium for web scraping
-- pandas for data processing
 
