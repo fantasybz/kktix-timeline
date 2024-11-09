@@ -10,8 +10,7 @@ This project provides data processing for KKTIX event data, featuring:
 - Event data extraction
 - Expense calculations
 - Learning hours tracking
-- Data export capabilities
-
+- Data visualization
 ## Setup
 
 ### Prerequisites
