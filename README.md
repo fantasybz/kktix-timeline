@@ -107,4 +107,5 @@ pip install -r requirements.txt
 ### Technologies Used
 - Python 3.8+
 - Selenium for web scraping
+- D3.js for data visualization
 
