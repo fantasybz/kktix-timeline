@@ -385,26 +385,14 @@ function createTimeline(events) {
 		.enter()
 		.append("rect")
 		.attr("class", "background")
-		.attr("x", -margin.left) // Extend background to include labels
+		.attr("x", -margin.left)
 		.attr("y", d => y(d.event_title))
-		.attr("width", width + margin.left + margin.right) // Full width including margins
+		.attr("width", width + margin.left + margin.right)
 		.attr("height", y.bandwidth())
 		.attr("fill", "white")
 		.attr("stroke", "#e0e0e0")
-		.attr("stroke-width", 1);
-
-	// Add row dividers for better separation
-	svg.selectAll(".row-divider")
-		.data(events)
-		.enter()
-		.append("line")
-		.attr("class", "row-divider")
-		.attr("x1", -margin.left)
-		.attr("x2", width + margin.right)
-		.attr("y1", d => y(d.event_title) + y.bandwidth())
-		.attr("y2", d => y(d.event_title) + y.bandwidth())
-		.attr("stroke", "#e0e0e0")
-		.attr("stroke-width", 1);
+		.attr("stroke-width", 1)
+		.attr("stroke-dasharray", "3,3");
 
 	// Add hover effect for rows
 	svg.selectAll(".background")
