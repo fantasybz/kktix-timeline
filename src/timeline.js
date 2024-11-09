@@ -366,13 +366,23 @@ function createTimeline(events) {
 	// Sort events by start time in descending order
 	events.sort((a, b) => b.startDate - a.startDate);
 
-	// Set up scales - extend domain to include end dates
+	// Set up scales - extend domain to include end dates with buffer
 	const x = d3.scaleTime()
 		.domain([
 			d3.min(events, d => d.startDate),
 			d3.max(events, d => d.endDate)
 		])
-		.range([0, width]);
+		.nice();  // Round to nice values first
+
+	// Calculate buffer based on the domain range
+	const timeRange = x.domain()[1] - x.domain()[0];
+	const bufferDays = Math.ceil(timeRange / (1000 * 60 * 60 * 24 * 30)); // Roughly one day per month of range
+
+	x.domain([
+		d3.timeDay.offset(x.domain()[0], -bufferDays),  // Dynamic buffer at start
+		d3.timeDay.offset(x.domain()[1], bufferDays)    // Dynamic buffer at end
+	])
+	.range([0, width]);
 
 	const y = d3.scaleBand()
 		.domain(events.map(d => d.event_title))
@@ -432,7 +442,7 @@ function createTimeline(events) {
 		.attr("class", "timeline-bar")
 		.attr("x", d => x(d.startDate))
 		.attr("y", d => y(d.event_title))
-		.attr("width", d => Math.max(8, x(d.endDate) - x(d.startDate)))
+		.attr("width", d => Math.max(20, x(d.endDate) - x(d.startDate)))
 		.attr("height", y.bandwidth())
 		.attr("rx", 4)
 		.attr("ry", 4)
