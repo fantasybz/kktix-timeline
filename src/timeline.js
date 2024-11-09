@@ -435,7 +435,13 @@ function createTimeline(events) {
                 .attr("class", "timeline-bar")
                 .attr("x", d => x(d.startDate))
                 .attr("y", d => y(d.event_title))
-                .attr("width", d => Math.max(20, x(d.endDate) - x(d.startDate)))
+                .attr("width", d => {
+                    // Calculate the difference in days
+                    const oneDayInMs = 24 * 60 * 60 * 1000;
+                    const duration = d.endDate - d.startDate;
+                    const days = Math.max(1, duration / oneDayInMs); // At least 1 day
+                    return Math.max(20, x(d.startDate.getTime() + (days * oneDayInMs)) - x(d.startDate));
+                })
                 .attr("height", y.bandwidth())
                 .attr("rx", 4)
                 .attr("ry", 4)
@@ -447,46 +453,77 @@ function createTimeline(events) {
                                 .attr("fill", d3.color(getEventColor(d.details["Event Host"])).darker(0.5))
                                 .style("cursor", "pointer");
 
-                        // Add tooltip with both start and end times
-                        const tooltip = svg.append("g")
-                                .attr("class", "tooltip")
-                                .attr("transform", `translate(${x(d.startDate) + 15},${y(d.event_title) + y.bandwidth() / 2})`);
-
-                        // Create the text elements first
-                        const startText = tooltip.append("text")
-                                .attr("x", 10)
-                                .attr("y", -15)
-                                .text(`開始: ${d.details["Start Time"]}`);
-
-                        // Parse Event Time string
+                        // Calculate max width based on text lengths
+                        const startTime = d.details["Start Time"] || ""
                         const eventTime = d.details["Event Time"] || "";
-                        const [startTime, endTime] = eventTime.split(" ~ ");
+                        const [_startTime, endTime] = eventTime.split(" ~ ");
+                        const startText = `開始: ${startTime || "N/A"}`;
+                        const endText = endTime ? `結束: ${endTime}` : "";
+                        const locationText = d.details["Event Location"].substring(0, 20) + "...";
+                        
+                        const maxWidth = Math.max(
+                            startText.length * 8,  // Approximate width per character
+                            endText.length * 8,
+                            locationText.length * 8
+                        );
 
-                        // Only add end time if it exists
+                        // Calculate tooltip position
+                        const barX = x(d.startDate) + 40;
+                        const barY = y(d.event_title);
+                        const svgWidth = width + margin.left + margin.right;
+                        
+                        // Determine if tooltip should go above/below and left/right of the bar
+                        const tooltipHeight = endTime ? 70 : 55;
+                        const tooltipWidth = maxWidth + 50;
+                        
+                        // Default position (to the right and centered vertically)
+                        let tooltipX = barX;
+                        let tooltipY = barY + y.bandwidth() / 2;
+                        
+                        // Adjust horizontal position if too close to right edge
+                        if (tooltipX + tooltipWidth > svgWidth) {
+                            tooltipX = x(d.startDate) - tooltipWidth - 15;
+                        }
+                        
+                        // Adjust vertical position if too close to top or bottom
+                        if (tooltipY - tooltipHeight/2 < 0) {
+                            tooltipY = tooltipHeight/2;
+                        } else if (tooltipY + tooltipHeight/2 > height) {
+                            tooltipY = height - tooltipHeight/2;
+                        }
+
+                        // Add tooltip with adjusted position
+                        const tooltip = svg.append("g")
+                            .attr("class", "tooltip")
+                            .attr("transform", `translate(${tooltipX},${tooltipY})`);
+
+                        // Create the tooltip background
+                        tooltip.append("rect")
+                            .attr("x", 0)
+                            .attr("y", -tooltipHeight/2)
+                            .attr("width", tooltipWidth)
+                            .attr("height", tooltipHeight)
+                            .attr("rx", 4)
+                            .attr("fill", "white")
+                            .attr("stroke", "#ccc");
+
+                        // Add text elements with adjusted positions
+                        tooltip.append("text")
+                            .attr("x", 10)
+                            .attr("y", -15)
+                            .text(startText);
+
                         if (endTime) {
                             tooltip.append("text")
                                 .attr("x", 10)
                                 .attr("y", 5)
-                                .text(`結束: ${endTime}`);
-
-                            // Adjust location text position when end time exists
-                            locationText.attr("y", 25);
+                                .text(endText);
                         }
 
-                        const locationText = tooltip.append("text")
-                                .attr("x", 10)
-                                .attr("y", endTime ? 25 : 5)
-                                .text(d.details["Event Location"].substring(0, 25) + "...");
-
-                        // Adjust tooltip background height based on whether end time exists
-                        tooltip.insert("rect", ":first-child")
-                                .attr("x", 0)
-                                .attr("y", -35)
-                                .attr("width", maxWidth + 20)
-                                .attr("height", endTime ? 70 : 50)  // Taller if end time exists
-                                .attr("rx", 4)
-                                .attr("fill", "white")
-                                .attr("stroke", "#ccc");
+                        tooltip.append("text")
+                            .attr("x", 10)
+                            .attr("y", endTime ? 25 : 5)
+                            .text(locationText);
                 })
                 .on("mouseout", function (event, d) {
                         // Return to original color

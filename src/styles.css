@@ -165,6 +165,29 @@ body {
 .tooltip {
     font-size: 12px;
     fill: #666;
+    z-index: 9999; /* Ensure tooltip is on top */
+}
+
+.tooltip rect {
+    fill: white;
+    stroke: #ccc;
+    stroke-width: 1px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.tooltip text {
+    font-size: 12px;
+    fill: #333;
+    pointer-events: none; /* Prevent tooltip from interfering with interactions */
+}
+
+/* Ensure SVG elements stack properly */
+svg {
+    overflow: visible; /* Allow elements to render outside SVG bounds */
+}
+
+.timeline-bar {
+    z-index: 1;
 }
 
 /* Event details modal styles */
