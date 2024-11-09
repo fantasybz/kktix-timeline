@@ -171,6 +171,9 @@ function hideEventDetails() {
 
 // Add event labels with collision detection
 function createLabels(svg, events, y) {
+	// Calculate available width for labels based on margin
+	const labelMaxWidth = 280; 
+
 	const labels = svg.selectAll(".timeline-label")
 		.data(events)
 		.enter()
@@ -180,12 +183,12 @@ function createLabels(svg, events, y) {
 		.attr("y", d => y(d.event_title) + y.bandwidth() / 2)
 		.attr("dy", ".35em")
 		.attr("text-anchor", "end")
-		.text(d => {
-			// Adjusted to show about 27 characters
-			const maxLength = 27;
-			return d.event_title.length > maxLength ?
-				d.event_title.substring(0, maxLength - 3) + "..." :
-				d.event_title;
+		.each(function(d) {
+			const self = d3.select(this);
+			const truncated = d.event_title.length > 30 
+				? d.event_title.substring(0, 30) + "..."
+				: d.event_title;
+			self.text(truncated);
 		})
 		.on("click", (event, d) => showEventDetails(d));
 
@@ -335,7 +338,7 @@ function createTimeline(events) {
 
 	// Calculate width based on window size
 	const containerWidth = Math.min(window.innerWidth * 0.95, 1600); // 95% of window width, max 1600px
-	const margin = { top: 10, right: 50, bottom: 20, left: 200 }; // Increased left margin
+	const margin = { top: 10, right: 50, bottom: 20, left: 300 }; // Increased left margin
 	const width = containerWidth - margin.left - margin.right;
 	const height = Math.max(events.length * 30, 100);
 

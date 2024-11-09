@@ -150,18 +150,13 @@ body {
     padding: 20px;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    overflow: auto;
-    width: 100%;
-    max-width: 100%;
-    position: relative;
+    overflow-x: auto;
 }
 
 #timeline svg {
-    display: block;
     width: 100%;
     height: auto;
     min-width: 900px;  /* Minimum width to prevent too much compression */
-    max-width: 100%;   /* Ensures SVG doesn't overflow */
 }
 
 .domain {
