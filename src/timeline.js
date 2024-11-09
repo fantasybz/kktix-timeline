@@ -181,9 +181,10 @@ function createLabels(svg, events, y) {
 		.attr("dy", ".35em")
 		.attr("text-anchor", "end")
 		.text(d => {
-			// Truncate long titles
-			return d.event_title.length > 30 ?
-				d.event_title.substring(0, 27) + "..." :
+			// Adjusted to show about 27 characters
+			const maxLength = 27;
+			return d.event_title.length > maxLength ?
+				d.event_title.substring(0, maxLength - 3) + "..." :
 				d.event_title;
 		})
 		.on("click", (event, d) => showEventDetails(d));
@@ -334,7 +335,7 @@ function createTimeline(events) {
 
 	// Calculate width based on window size
 	const containerWidth = Math.min(window.innerWidth * 0.95, 1600); // 95% of window width, max 1600px
-	const margin = { top: 30, right: 150, bottom: 50, left: 300 };
+	const margin = { top: 10, right: 50, bottom: 20, left: 200 }; // Increased left margin
 	const width = containerWidth - margin.left - margin.right;
 	const height = Math.max(events.length * 30, 100);
 
@@ -495,10 +496,12 @@ function createLocationChart(events) {
 	// Clear existing chart
 	d3.select("#locationChart").html("");
 
-	// Group events by location and count occurrences
+	// Group events by location and count occurrences, excluding "Unknown"
 	const locationCounts = events.reduce((acc, event) => {
-		const location = event.details["Event Location"] || "Unknown";
-		acc[location] = (acc[location] || 0) + 1;
+		const location = event.details["Event Location"];
+		if (location && location !== "Unknown") {  // Only count if location exists and isn't "Unknown"
+			acc[location] = (acc[location] || 0) + 1;
+		}
 		return acc;
 	}, {});
 

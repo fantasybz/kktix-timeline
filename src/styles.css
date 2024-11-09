@@ -293,10 +293,8 @@ body {
 }
 
 .timeline-label {
-    font-size: 12px;
     fill: #333;
     cursor: pointer;
-    dominant-baseline: middle;
     font-family: 'Noto Sans TC', sans-serif;
     pointer-events: all;
     white-space: nowrap;
@@ -564,7 +562,6 @@ body {
 svg text {
     font-size: 10px; /* Reduced from 12px */
     fill: #666;
-    text-anchor: middle;
 }
 
 /* Make graphs more compact */
