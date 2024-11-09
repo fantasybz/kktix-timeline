@@ -2,6 +2,9 @@
 
 A Python tool that processes KKTIX event data to analyze event history, expenses, and learning hours.
 
+## Dashboard Preview
+![KKTIX Timeline Dashboard](docs/images/dashboard.png)
+
 ## Overview
 This project provides data processing for KKTIX event data, featuring:
 - Event data extraction
