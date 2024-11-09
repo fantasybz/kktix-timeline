@@ -330,18 +330,30 @@ function createExpenseChart(events) {
 }
 
 function createTimeline(events) {
-	// Add this at the beginning of the function
 	updateSummary(events);
-	
-	// Clear any existing timeline first
 	d3.select("#timeline").html("");
 
 	// Calculate width based on window size
-	const containerWidth = Math.min(window.innerWidth * 0.95, 1600); // 95% of window width, max 1600px
-	const margin = { top: 10, right: 50, bottom: 20, left: 300 }; // Increased left margin
+	const containerWidth = Math.min(window.innerWidth * 0.95, 1600);
+	const margin = { top: 10, right: 50, bottom: 100, left: 300 };
 	const width = containerWidth - margin.left - margin.right;
-	const height = Math.max(events.length * 30, 100);
+	
+	// Calculate height based on number of events with a minimum row height
+	const rowHeight = 30;
+	const height = Math.max(events.length * rowHeight, 100);
+	
+	// Create a container div with fixed height and scrolling if needed
+	const container = d3.select("#timeline")
+		.style("height", "600px")
+		.style("overflow-y", "auto")
+		.style("padding-bottom", "100px");
 
+	// Create SVG with extra padding at bottom
+	const svg = container.append("svg")
+		.attr("width", containerWidth)
+		.attr("height", height + margin.top + margin.bottom + 100)
+		.append("g")
+		.attr("transform", `translate(${margin.left},${margin.top})`);
 
 	// Parse both start and end dates
 	events.forEach(d => {
@@ -353,14 +365,6 @@ function createTimeline(events) {
 
 	// Sort events by start time in descending order
 	events.sort((a, b) => b.startDate - a.startDate);
-
-	// Create SVG and scales
-	const svg = d3.select("#timeline")
-		.append("svg")
-		.attr("width", containerWidth)
-		.attr("height", height + margin.top + margin.bottom)
-		.append("g")
-		.attr("transform", `translate(${margin.left},${margin.top})`);
 
 	// Set up scales - extend domain to include end dates
 	const x = d3.scaleTime()
@@ -381,11 +385,39 @@ function createTimeline(events) {
 		.enter()
 		.append("rect")
 		.attr("class", "background")
-		.attr("x", 0)
+		.attr("x", -margin.left) // Extend background to include labels
 		.attr("y", d => y(d.event_title))
-		.attr("width", width)
+		.attr("width", width + margin.left + margin.right) // Full width including margins
 		.attr("height", y.bandwidth())
-		.attr("fill", (d, i) => i % 2 === 0 ? "#f8f8f8" : "white");
+		.attr("fill", "white")
+		.attr("stroke", "#e0e0e0")
+		.attr("stroke-width", 1);
+
+	// Add row dividers for better separation
+	svg.selectAll(".row-divider")
+		.data(events)
+		.enter()
+		.append("line")
+		.attr("class", "row-divider")
+		.attr("x1", -margin.left)
+		.attr("x2", width + margin.right)
+		.attr("y1", d => y(d.event_title) + y.bandwidth())
+		.attr("y2", d => y(d.event_title) + y.bandwidth())
+		.attr("stroke", "#e0e0e0")
+		.attr("stroke-width", 1);
+
+	// Add hover effect for rows
+	svg.selectAll(".background")
+		.on("mouseover", function() {
+			d3.select(this)
+				.attr("fill", "#edf3ff")
+				.attr("stroke", "#ccd9ff");
+		})
+		.on("mouseout", function() {
+			d3.select(this)
+				.attr("fill", "white")
+				.attr("stroke", "#e0e0e0");
+		});
 
 	// Add x-axis with alternating ticks
 	const xAxis = d3.axisBottom(x)
