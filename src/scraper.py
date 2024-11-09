@@ -1,16 +1,24 @@
+"""
+Scraper for KKTIX orders
+"""
+
+import json
+import os
+import time
+from datetime import datetime
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-import os
-import time
-from datetime import datetime
-from utils import setup_logger
+from selenium.common.exceptions import TimeoutException, WebDriverException, NoSuchElementException
 from dotenv import load_dotenv
-import json
+
+from utils import setup_logger
 
 class KKTIXScraper:
+    """A web scraper for extracting order information from KKTIX accounts."""
     def __init__(self):
         self.logger = setup_logger()
         load_dotenv()  # Load environment variables
@@ -20,11 +28,11 @@ class KKTIXScraper:
         
         # Check headless mode from environment variable with debug logging
         headless_env = os.getenv('KKTIX_HEADLESS', 'true')  # Default to 'true' if not set
-        self.logger.debug(f"KKTIX_HEADLESS environment variable: {headless_env}")
+        self.logger.debug("KKTIX_HEADLESS environment variable: %s", headless_env)
         
         # Handle None case and convert to boolean
         headless = str(headless_env).lower() == 'true' if headless_env is not None else True
-        self.logger.debug(f"Headless mode enabled: {headless}")
+        self.logger.debug("Headless mode enabled: %s", headless)
         
         if headless:
             chrome_options.add_argument('--headless=new')
@@ -34,7 +42,7 @@ class KKTIXScraper:
             self.logger.info("Running in visible mode")
         
         # Add debug logging for chrome options
-        self.logger.debug(f"Chrome options arguments: {chrome_options.arguments}")
+        self.logger.debug("Chrome options arguments: %s", chrome_options.arguments)
         
         chrome_options.add_argument('--disable-gpu')
         chrome_options.add_argument('--no-sandbox')
@@ -48,6 +56,8 @@ class KKTIXScraper:
         self.dumps_dir = f"dumps_{timestamp}"
         if not os.path.exists(self.dumps_dir):
             os.makedirs(self.dumps_dir)
+        # Add this line
+        self.latest_json_filename = None
 
     def login(self):
         """Automated login to KKTIX and navigate to orders page"""
@@ -84,7 +94,7 @@ class KKTIXScraper:
             self.logger.info("Successfully loaded orders page")
             
         except Exception as e:
-            self.logger.error(f"Login error: {str(e)}")
+            self.logger.error("Login error: %s", str(e))
             raise
 
     def wait_for_element(self, by, value, timeout=10):
@@ -94,7 +104,7 @@ class KKTIXScraper:
                 EC.presence_of_element_located((by, value))
             )
         except Exception as e:
-            self.logger.error(f"Timeout waiting for element {value}: {str(e)}")
+            self.logger.error("Timeout waiting for element %s: %s", value, str(e))
             raise
 
     def capture_order_pages(self):
@@ -111,11 +121,6 @@ class KKTIXScraper:
                 total_height = self.driver.execute_script("return document.body.scrollHeight")
                 self.driver.set_window_size(1200, total_height + 100)  # Add padding
                 
-                # Take screenshot
-                screenshot_path = os.path.join(self.screenshot_dir, f"orders_page_{page:03d}.png")
-                self.driver.save_screenshot(screenshot_path)
-                self.logger.info(f"Captured page {page}: {screenshot_path}")
-                
                 # Check for next page
                 next_buttons = self.driver.find_elements(By.CSS_SELECTOR, ".pagination a[rel='next']")
                 if not next_buttons:
@@ -126,8 +131,8 @@ class KKTIXScraper:
                 time.sleep(2)
                 page += 1
                 
-            except Exception as e:
-                self.logger.error(f"Error on page {page}: {str(e)}")
+            except (TimeoutException, WebDriverException) as e:
+                self.logger.error("Error on page %d: %s", page, str(e))
                 break
 
     def dump_to_json(self, orders):
@@ -139,11 +144,11 @@ class KKTIXScraper:
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(orders, f, ensure_ascii=False, indent=2)
                 
-            self.logger.info(f"Orders dumped to JSON: {json_path}")
+            self.logger.info("Orders dumped to JSON: %s", json_path)
             return json_path
             
         except Exception as e:
-            self.logger.error(f"Error dumping to JSON: {str(e)}")
+            self.logger.error("Error dumping to JSON: %s", str(e))
             raise
 
     def get_order_details(self):
@@ -157,7 +162,7 @@ class KKTIXScraper:
                 self.wait_for_element(By.CLASS_NAME, "accounting-row", timeout=20)
                 order_elements = self.driver.find_elements(By.CLASS_NAME, "accounting-row")
                 
-                self.logger.info(f"Processing page {page}")
+                self.logger.info("Processing page %d", page)
                 
                 for order in order_elements:
                     try:
@@ -172,7 +177,7 @@ class KKTIXScraper:
                             event_link = event_element.find_element(By.TAG_NAME, "a")
                             event_title = event_link.text
                             event_url = event_link.get_attribute("href")
-                        except:
+                        except NoSuchElementException:
                             event_title = event_element.text
                             event_url = None
                         
@@ -253,14 +258,14 @@ class KKTIXScraper:
                                     details["Event Time"] = time_text
                                     details["Start Time"] = start_time
                                     
-                                    self.logger.debug(f"Parsed times - Start: {start_time}")
+                                    self.logger.debug("Parsed times - Start: %s", start_time)
                                 
                                 # Close tab and switch back
                                 self.driver.close()
                                 self.driver.switch_to.window(self.driver.window_handles[0])
                                 
-                            except Exception as e:
-                                self.logger.warning(f"Error extracting detailed time for order {order_number}: {str(e)}")
+                            except (TimeoutException, WebDriverException, NoSuchElementException) as e:
+                                self.logger.warning("Error extracting detailed time for order %s: %s", order_number, str(e))
                                 # Ensure we switch back to main tab even if there's an error
                                 if len(self.driver.window_handles) > 1:
                                     self.driver.close()
@@ -278,10 +283,10 @@ class KKTIXScraper:
                         }
                         
                         orders.append(order_info)
-                        self.logger.info(f"Extracted order: {order_number}")
+                        self.logger.info("Extracted order: %s", order_number)
                         
-                    except Exception as e:
-                        self.logger.warning(f"Error extracting order details: {str(e)}")
+                    except (NoSuchElementException, TimeoutException, WebDriverException) as e:
+                        self.logger.warning("Error extracting order details: %s", str(e))
                         continue
                 
                 # Check for next page
@@ -294,8 +299,8 @@ class KKTIXScraper:
                 time.sleep(2)  # Wait for page load
                 page += 1
                 
-            except Exception as e:
-                self.logger.error(f"Error processing page {page}: {str(e)}")
+            except (TimeoutException, WebDriverException) as e:
+                self.logger.error("Browser error on page %d: %s", page, str(e))
                 break
         
         # Create timestamp for the JSON filename
@@ -307,8 +312,8 @@ class KKTIXScraper:
         with open(json_path, 'w', encoding='utf-8') as f:
             json.dump(orders, f, ensure_ascii=False, indent=2)
             
-        self.logger.info(f"Total orders collected: {len(orders)}")
-        self.logger.info(f"Orders dumped to JSON: {json_path}")
+        self.logger.info("Total orders collected: %d", len(orders))
+        self.logger.info("Orders dumped to JSON: %s", json_path)
         return orders
 
     def quit(self):
@@ -317,8 +322,8 @@ class KKTIXScraper:
             if self.driver:
                 self.driver.quit()
                 self.logger.info("Browser session closed successfully")
-        except Exception as e:
-            self.logger.error(f"Error closing browser: {str(e)}")
+        except WebDriverException as e:
+            self.logger.error("Error closing browser: %s", str(e))
 
     def dump_page_source(self):
         """Dump the current page HTML to a file for analysis"""
@@ -338,8 +343,8 @@ class KKTIXScraper:
             with open(dump_path, 'w', encoding='utf-8') as f:
                 f.write(self.driver.page_source)
                 
-            self.logger.info(f"Page source dumped to: {dump_path}")
+            self.logger.info("Page source dumped to: %s", dump_path)
             
         except Exception as e:
-            self.logger.error(f"Error dumping page source: {str(e)}")
+            self.logger.error("Error dumping page source: %s", str(e))
             raise

@@ -1,9 +1,14 @@
+"""
+Utility functions for KKTIX scraper
+"""
+
 import logging
 import sys
 from datetime import datetime
 import os
 
 def setup_logger():
+    """Configure and return a logger with console and file handlers."""
     # Create logs directory if it doesn't exist
     logs_dir = "logs"
     if not os.path.exists(logs_dir):
@@ -34,4 +39,4 @@ def setup_logger():
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
     
-    return logger 
+    return logger

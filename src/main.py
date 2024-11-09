@@ -1,10 +1,20 @@
+"""
+Main script for KKTIX orders
+"""
+
+import os
+import sys
+import webbrowser
+from json import JSONDecodeError
+from pathlib import Path
+
+from dotenv import load_dotenv
+from selenium.common.exceptions import WebDriverException
+
 from scraper import KKTIXScraper
 from utils import setup_logger
-import sys
-from dotenv import load_dotenv
-import os
-import webbrowser
-from pathlib import Path
+
+load_dotenv()  # Load environment variables from .env file
 
 def copy_and_update_timeline(dumps_dir, json_filename):
     """Copy timeline files and update with JSON data"""
@@ -37,6 +47,7 @@ def copy_and_update_timeline(dumps_dir, json_filename):
     return Path(dumps_dir) / 'timeline.html'
 
 def main():
+    """Main execution function for KKTIX order processing and visualization."""
     logger = setup_logger()
     scraper = None
     
@@ -57,17 +68,17 @@ def main():
         # Open timeline in default browser
         webbrowser.open(file_url)
         
-        logger.info(f"Successfully processed {len(orders)} orders")
-        logger.info(f"Timeline visualization opened at: {file_url}")
+        logger.info("Successfully processed %d orders", len(orders))
+        logger.info("Timeline visualization opened at: %s", file_url)
         
         return 0
         
-    except Exception as e:
-        logger.error(f"Error in main: {str(e)}")
+    except (IOError, WebDriverException, JSONDecodeError) as e:
+        logger.error("Error in main: %s", str(e))
         return 1
     finally:
         if scraper:
             scraper.quit()
 
 if __name__ == "__main__":
-    sys.exit(main()) 
+    sys.exit(main())
