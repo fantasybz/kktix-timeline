@@ -11,7 +11,7 @@ function initializeFilters(events) {
 
         // Get unique years from Start Time
         const years = Array.from(new Set(events.map(event => {
-                const date = new Date(event.details["Start Time"].replace(/\//g, '-'));
+                const date = new Date(event.details["Start Time"].replace(/\//g, "-"));
                 return date.getFullYear();
         }))).sort((a, b) => b - a);  // Sort years descending
 
@@ -19,36 +19,36 @@ function initializeFilters(events) {
         const locations = [...new Set(events.map(event => event.details["Event Location"]))].sort();
 
         // Populate host filter dropdown
-        const hostSelect = document.getElementById('hostFilter');
-        hostSelect.innerHTML = '<option value="all">所有主辦單位</option>';
+        const hostSelect = document.getElementById("hostFilter");
+        hostSelect.innerHTML = "<option value=\"all\">所有主辦單位</option>";
 
         hosts.forEach(host => {
-                const option = document.createElement('option');
+                const option = document.createElement("option");
                 option.value = host;
-                option.text = host.length > 20 ? host.substring(0, 17) + '...' : host;
+                option.text = host.length > 20 ? host.substring(0, 17) + "..." : host;
                 option.title = host;  // Show full text on hover
                 hostSelect.appendChild(option);
         });
 
         // Populate year filter dropdown
-        const yearSelect = document.getElementById('yearFilter');
-        yearSelect.innerHTML = '<option value="all">所有年份</option>';
+        const yearSelect = document.getElementById("yearFilter");
+        yearSelect.innerHTML = "<option value='all'>所有年份</option>";
 
         years.forEach(year => {
-                const option = document.createElement('option');
+                const option = document.createElement("option");
                 option.value = year;
                 option.text = year;
                 yearSelect.appendChild(option);
         });
 
         // Populate location filter dropdown
-        const locationSelect = document.getElementById('locationFilter');
-        locationSelect.innerHTML = '<option value="all">所有地點</option>';
+        const locationSelect = document.getElementById("locationFilter");
+        locationSelect.innerHTML = "<option value='all'>所有地點</option>";
 
         locations.forEach(location => {
-                const option = document.createElement('option');
+                const option = document.createElement("option");
                 option.value = location;
-                option.text = location.length > 20 ? location.substring(0, 17) + '...' : location;
+                option.text = location.length > 20 ? location.substring(0, 17) + "..." : location;
                 option.title = location;  // Show full text on hover
                 locationSelect.appendChild(option);
         });
@@ -57,27 +57,24 @@ function initializeFilters(events) {
 }
 
 function filterEvents() {
-        const selectedHost = document.getElementById('hostFilter').value;
-        const selectedYear = document.getElementById('yearFilter').value;
-        const selectedLocation = document.getElementById('locationFilter').value;
-        const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+        const selectedHost = document.getElementById("hostFilter").value;
+        const selectedYear = document.getElementById("yearFilter").value;
+        const selectedLocation = document.getElementById("locationFilter").value;
+        const searchTerm = document.getElementById("searchFilter").value.toLowerCase();
 
         filteredData = timelineData.filter(event => {
-                const hostMatch = selectedHost === 'all' || event.details["Event Host"] === selectedHost;
+                const hostMatch = selectedHost === "all" || event.details["Event Host"] === selectedHost;
                 const titleMatch = event.event_title.toLowerCase().includes(searchTerm);
-                const locationMatch = selectedLocation === 'all' || event.details["Event Location"] === selectedLocation;
-                
-                // Year matching
-                const eventDate = new Date(event.details["Start Time"].replace(/\//g, '-'));
-                const yearMatch = selectedYear === 'all' || eventDate.getFullYear().toString() === selectedYear;
-                
+                const locationMatch = selectedLocation === "all" || event.details["Event Location"] === selectedLocation;  // Year matching
+                const eventDate = new Date(event.details["Start Time"].replace(/\//g, "-"));
+                const yearMatch = selectedYear === "all" || eventDate.getFullYear().toString() === selectedYear;
                 return hostMatch && titleMatch && yearMatch && locationMatch;
         });
 
         // Sort filtered data before creating timeline
         filteredData.sort((a, b) => {
-                const aDate = new Date(a.details["Start Time"].replace(/\//g, '-'));
-                const bDate = new Date(b.details["Start Time"].replace(/\//g, '-'));
+                const aDate = new Date(a.details["Start Time"].replace(/\//g, "-"));
+                const bDate = new Date(b.details["Start Time"].replace(/\//g, "-"));
                 return bDate - aDate;  // Descending order
         });
 
@@ -86,26 +83,21 @@ function filterEvents() {
 }
 
 function resetFilter() {
-        document.getElementById('hostFilter').value = 'all';
-        document.getElementById('searchFilter').value = '';
+        document.getElementById("hostFilter").value = "all";
+        document.getElementById("searchFilter").value = "";
         filteredData = timelineData;
         createTimeline(filteredData);
 }
 
 function showEventDetails(event) {
-        const detailsDiv = document.getElementById('event-details');
-        const contentDiv = document.getElementById('event-details-content');
+        const detailsDiv = document.getElementById("event-details");
+        const contentDiv = document.getElementById("event-details-content");
 
         // Create HTML content for details
         let content = `
         <div class="event-header">
             <h2>${event.event_title}</h2>
-            ${event.thumbnail_url 
-                ? `<div class="event-thumbnail">
-                    <img src="${event.thumbnail_url}" alt="${event.event_title}">
-                  </div>`
-                : ''
-            }
+            ${event.thumbnail_url ? `<div class="event-thumbnail"><img src="${event.thumbnail_url}" alt="${event.event_title}"></div>` : ""}
         </div>
         <div class="event-info">
             <table>
@@ -145,35 +137,35 @@ function showEventDetails(event) {
                                 ${event.details.Receipt.number}
                             </a>
                         </td>
-                    </tr>` : ''
+                    </tr>` : ""
                 }
             </table>
             
             <div class="event-actions">
                 ${event.actions.map(action =>
                         `<a href="${action.url}" 
-                        class="action-button ${action.disabled ? 'disabled' : ''}" 
+                        class="action-button ${action.disabled ? "disabled" : ""}" 
                         target="_blank"
-                        ${action.disabled ? 'disabled' : ''}>
+                        ${action.disabled ? "disabled" : ""}>
                         ${action.text}
                     </a>`
-                ).join('')}
+                ).join("")}
             </div>
         </div>
     `;
 
         contentDiv.innerHTML = content;
-        detailsDiv.style.display = 'block';
+        detailsDiv.style.display = "block";
 }
 
 function hideEventDetails() {
-        document.getElementById('event-details').style.display = 'none';
+        document.getElementById("event-details").style.display = "none";
 }
 
 // Add event labels with collision detection
 function createLabels(svg, events, y) {
         // Calculate available width for labels based on margin
-        const labelMaxWidth = 280; 
+        const labelMaxWidth = 280;
 
         const labels = svg.selectAll(".timeline-label")
                 .data(events)
@@ -184,9 +176,9 @@ function createLabels(svg, events, y) {
                 .attr("y", d => y(d.event_title) + y.bandwidth() / 2)
                 .attr("dy", ".35em")
                 .attr("text-anchor", "end")
-                .each(function(d) {
+                .each(function (d) {
                         const self = d3.select(this);
-                        const truncated = d.event_title.length > 30 
+                        const truncated = d.event_title.length > 30
                                 ? d.event_title.substring(0, 30) + "..."
                                 : d.event_title;
                         self.text(truncated);
@@ -204,7 +196,7 @@ function updateSummary(events) {
         // Calculate total amount with safety checks
         const total = events.reduce((sum, event) => {
                 const amountStr = event.details["Amount"] || "0";
-                const amount = parseInt(amountStr.replace(/[^0-9-]/g, '')) || 0;
+                const amount = parseInt(amountStr.replace(/[^0-9-]/g, "")) || 0;
                 return sum + amount;
         }, 0);
 
@@ -214,11 +206,11 @@ function updateSummary(events) {
                 if (!eventTime) return sum;
 
                 try {
-                        // Check if it's a time range (contains '~')
-                        if (eventTime.includes('~')) {
-                                const [startStr, endStr] = eventTime.split('~').map(t => t.trim());
-                                const start = new Date(startStr.split('(')[0].trim());
-                                const end = new Date(endStr.split('(')[0].trim());
+                        // Check if it"s a time range (contains "~")
+                        if (eventTime.includes("~")) {
+                                const [startStr, endStr] = eventTime.split("~").map(t => t.trim());
+                                const start = new Date(startStr.split("(")[0].trim());
+                                const end = new Date(endStr.split("(")[0].trim());
                                 const diffInHours = (end - start) / (1000 * 60 * 60);
                                 return sum + (isNaN(diffInHours) ? 0 : diffInHours);
                         } else {
@@ -226,15 +218,15 @@ function updateSummary(events) {
                                 return sum;
                         }
                 } catch (e) {
-                        console.warn('Error parsing event time:', eventTime);
+                        console.warn("Error parsing event time:", eventTime);
                         return sum;
                 }
         }, 0);
 
         // Update summary stats with safety checks
-        const totalAmountElement = document.getElementById('totalAmount');
-        const totalEventsElement = document.getElementById('totalEvents');
-        const totalHoursElement = document.getElementById('totalHours');
+        const totalAmountElement = document.getElementById("totalAmount");
+        const totalEventsElement = document.getElementById("totalEvents");
+        const totalHoursElement = document.getElementById("totalHours");
 
         if (totalAmountElement) {
                 totalAmountElement.textContent = `NT$ ${total.toLocaleString()}`;
@@ -260,7 +252,7 @@ function createExpenseChart(events) {
                 .map(event => {
                         // Extract numbers from amount string and handle invalid cases
                         const amountStr = event.details["Amount"] || "0";
-                        const amount = parseInt(amountStr.replace(/[^0-9-]/g, '')) || 0;
+                        const amount = parseInt(amountStr.replace(/[^0-9-]/g, "")) || 0;
                         return {
                                 title: event.event_title,
                                 amount: amount
@@ -271,7 +263,7 @@ function createExpenseChart(events) {
                 .slice(0, 5);
 
         // Get container dimensions
-        const container = document.getElementById('expenseChart');
+        const container = document.getElementById("expenseChart");
         const containerWidth = container.clientWidth;
         const containerHeight = container.clientHeight;
 
@@ -320,7 +312,7 @@ function createExpenseChart(events) {
                 .attr("dx", "0")
                 .attr("dy", "1em")
                 .attr("transform", "rotate(0)")
-                .text(function(d) {
+                .text(function (d) {
                         return d.length > 10 ? d.substring(0, 10) + "..." : d;
                 });
 
@@ -338,11 +330,11 @@ function createTimeline(events) {
         const containerWidth = Math.min(window.innerWidth * 0.95, 1600);
         const margin = { top: 50, right: 50, bottom: 100, left: 300 };
         const width = containerWidth - margin.left - margin.right;
-        
+
         // Calculate height based on number of events with a minimum row height
         const rowHeight = 30;
         const height = Math.max(events.length * rowHeight, 100);
-        
+
         // Create a container div with fixed height and scrolling if needed
         const container = d3.select("#timeline")
                 .style("height", "600px")
@@ -358,9 +350,9 @@ function createTimeline(events) {
 
         // Parse both start and end dates
         events.forEach(d => {
-                d.startDate = new Date(d.details["Start Time"].replace(/\//g, '-'));
+                d.startDate = new Date(d.details["Start Time"].replace(/\//g, "-"));
                 d.endDate = d.details["End Time"] ?
-                        new Date(d.details["End Time"].replace(/\//g, '-')) :
+                        new Date(d.details["End Time"].replace(/\//g, "-")) :
                         d.startDate;  // Use start date if no end date
         });
 
@@ -383,7 +375,7 @@ function createTimeline(events) {
                 d3.timeDay.offset(x.domain()[0], -bufferDays),  // Dynamic buffer at start
                 d3.timeDay.offset(x.domain()[1], bufferDays)    // Dynamic buffer at end
         ])
-        .range([0, width]);
+                .range([0, width]);
 
         const y = d3.scaleBand()
                 .domain(events.map(d => d.event_title))
@@ -407,12 +399,12 @@ function createTimeline(events) {
 
         // Add hover effect for rows
         svg.selectAll(".background")
-                .on("mouseover", function() {
+                .on("mouseover", function () {
                         d3.select(this)
                                 .attr("fill", "#edf3ff")
                                 .attr("stroke", "#ccd9ff");
                 })
-                .on("mouseout", function() {
+                .on("mouseout", function () {
                         d3.select(this)
                                 .attr("fill", "white")
                                 .attr("stroke", "#e0e0e0");
@@ -519,15 +511,15 @@ function createTimeline(events) {
 }
 
 // Add window resize handler
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
         if (filteredData.length > 0) {
                 createTimeline(filteredData);
         }
 });
 
 // Initialize the visualization when the page loads
-document.addEventListener('DOMContentLoaded', function () {
-        if (typeof timelineData !== 'undefined') {
+document.addEventListener("DOMContentLoaded", function () {
+        if (typeof timelineData !== "undefined") {
                 createTimeline(timelineData);
                 initializeFilters(timelineData);
         }
@@ -541,7 +533,7 @@ function createLocationChart(events) {
         // Group events by location and count occurrences, excluding "Unknown"
         const locationCounts = events.reduce((acc, event) => {
                 const location = event.details["Event Location"];
-                if (location && location !== "Unknown") {  // Only count if location exists and isn't "Unknown"
+                if (location && location !== "Unknown") {  // Only count if location exists and isn"t "Unknown"
                         acc[location] = (acc[location] || 0) + 1;
                 }
                 return acc;
@@ -555,7 +547,7 @@ function createLocationChart(events) {
 
         // Set up dimensions
         const margin = { top: 20, right: 20, bottom: 40, left: 40 };
-        const width = document.querySelector('.graph-box').clientWidth - margin.left - margin.right;
+        const width = document.querySelector(".graph-box").clientWidth - margin.left - margin.right;
         const height = 180 - margin.top - margin.bottom;
 
         // Create scales
@@ -596,7 +588,7 @@ function createLocationChart(events) {
                 .attr("dx", "0")
                 .attr("dy", "1em")
                 .attr("transform", "rotate(0)")
-                .text(function(d) {
+                .text(function (d) {
                         return d.length > 10 ? d.substring(0, 10) + "..." : d;
                 });
 
