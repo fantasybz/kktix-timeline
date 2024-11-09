@@ -263,7 +263,7 @@ function createExpenseChart(events) {
 		})
 		.filter(event => event.amount > 0) // Only include positive amounts
 		.sort((a, b) => b.amount - a.amount)
-		.slice(0, 3);
+		.slice(0, 5);
 
 	// Get container dimensions
 	const container = document.getElementById('expenseChart');
@@ -492,9 +492,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Add new function for location chart
 function createLocationChart(events) {
+	// Clear existing chart
+	d3.select("#locationChart").html("");
+
 	// Group events by location and count occurrences
 	const locationCounts = events.reduce((acc, event) => {
-		const location = event.details["Location"] || "Unknown";
+		const location = event.details["Event Location"] || "Unknown";
 		acc[location] = (acc[location] || 0) + 1;
 		return acc;
 	}, {});
