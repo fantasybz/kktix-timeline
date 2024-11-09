@@ -95,6 +95,10 @@ pip install -r requirements.txt
 - Event count
 - Location statistics
 
+### 3. Data Visualization
+- Interactive timeline of attended events
+- Top 5 expense hosts by attended events
+- Top 5 locations by attended events
 
 ## Technical Details
 
