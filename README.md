@@ -20,7 +20,7 @@ This project provides data processing for KKTIX event data, featuring:
 ### Installation Steps
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/kktix-timeline.git
+git clone https://github.com/fantasybz/kktix-timeline.git
 ```
 
 2. Navigate to the project directory
